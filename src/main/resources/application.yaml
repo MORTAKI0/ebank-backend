@@ -1,3 +1,11 @@
 spring:
   application:
     name: ebank-backend
+  profiles:
+    default: dev
+
+  config:
+    import: optional:file:.env[.properties]
+
+server:
+  port: 8080
