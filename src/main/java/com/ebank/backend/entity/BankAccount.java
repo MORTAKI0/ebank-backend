@@ -18,6 +18,9 @@ import java.util.List;
         name = "bank_accounts",
         uniqueConstraints = {
                 @UniqueConstraint(name = "uk_bank_accounts_rib", columnNames = "rib")
+        },
+        indexes = {
+                @Index(name = "idx_bank_accounts_rib", columnList = "rib")
         }
 )
 public class BankAccount {

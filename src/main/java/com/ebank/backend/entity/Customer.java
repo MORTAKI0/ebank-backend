@@ -18,6 +18,10 @@ import java.util.List;
         uniqueConstraints = {
                 @UniqueConstraint(name = "uk_customers_identity_ref", columnNames = "identity_ref"),
                 @UniqueConstraint(name = "uk_customers_email", columnNames = "email")
+        },
+        indexes = {
+                @Index(name = "idx_customers_identity_ref", columnList = "identity_ref"),
+                @Index(name = "idx_customers_email", columnList = "email")
         }
 )
 @PrimaryKeyJoinColumn(name = "id")

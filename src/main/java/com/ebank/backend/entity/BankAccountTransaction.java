@@ -21,6 +21,12 @@ public class BankAccountTransaction {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
+    @Column(nullable = false, length = 255)
+    private String label;
+
+    @Column(length = 500)
+    private String motif;
+
     // RG_15: precise date
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -43,5 +49,6 @@ public class BankAccountTransaction {
     public void onCreate() {
         if (createdAt == null) createdAt = LocalDateTime.now();
         if (amount == null) amount = BigDecimal.ZERO;
+        if (label == null || label.isBlank()) label = "Transaction";
     }
 }
