@@ -3,9 +3,13 @@ spring:
     name: ebank-backend
   profiles:
     default: dev
-
   config:
     import: optional:file:.env[.properties]
 
 server:
   port: 8080
+
+security:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-in-ms: ${JWT_EXPIRATION_IN_MS:3600000} # 1h
