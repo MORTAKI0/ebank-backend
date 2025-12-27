@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.Instant;
 import java.util.stream.Collectors;
@@ -28,7 +29,7 @@ public class GlobalExceptionHandler {
     }
 
     // Handles ResponseStatusException you throw in services/controllers
-    // Example: throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login ou mot de passe erronés");
+    // Example: throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login ou mot de passe erronAcs");
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ApiError> handleResponseStatus(ResponseStatusException ex,
                                                          HttpServletRequest request) {
@@ -42,13 +43,23 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiError> handleAuthentication(AuthenticationException ex,
                                                          HttpServletRequest request) {
-        return build(HttpStatus.UNAUTHORIZED, "Login ou mot de passe erronés", request);
+        return build(HttpStatus.UNAUTHORIZED, "Login ou mot de passe erronAcs", request);
+    }
+
+    // 404 - missing route/static resource
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleNoResourceFound(NoResourceFoundException ex,
+                                                          HttpServletRequest request) {
+        return build(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.getReasonPhrase(), request);
     }
 
     // 500 - fallback
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleOtherExceptions(Exception ex,
                                                           HttpServletRequest request) {
+        if (ex instanceof NoResourceFoundException) {
+            return build(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.getReasonPhrase(), request);
+        }
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", request);
     }
 
