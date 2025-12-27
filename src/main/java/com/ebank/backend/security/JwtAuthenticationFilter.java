@@ -69,10 +69,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (ExpiredJwtException ex) {
             // RG_3
-            throw new JwtAuthenticationException("Session invalide, veuillez s’authentifier", ex);
+            throw new JwtAuthenticationException("Session invalide, veuillez s\u2019authentifier", ex);
         } catch (JwtException | IllegalArgumentException ex) {
             // treat invalid token as invalid session
-            throw new JwtAuthenticationException("Session invalide, veuillez s’authentifier", ex);
+            throw new JwtAuthenticationException("Session invalide, veuillez s\u2019authentifier", ex);
         }
     }
 }
