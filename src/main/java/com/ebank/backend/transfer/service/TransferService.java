@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +29,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class TransferService {
+
+    private static final String FORBIDDEN_MESSAGE =
+            "Vous n\u2019avez pas le droit d\u2019acc\u00e9der \u00e0 cette fonctionnalit\u00e9. Veuillez contacter votre administrateur";
 
     private final BankAccountRepository bankAccountRepository;
     private final BankAccountTransactionRepository transactionRepository;
@@ -55,7 +59,7 @@ public class TransferService {
         BankAccount source = bankAccountRepository.findByIdForUpdate(request.getFromAccountId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Compte source introuvable"));
         if (!source.getCustomer().getId().equals(customer.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, HttpStatus.FORBIDDEN.getReasonPhrase());
+            throw new AccessDeniedException(FORBIDDEN_MESSAGE);
         }
         assertAccountActive(source, "source");
 
@@ -131,7 +135,7 @@ public class TransferService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED, HttpStatus.UNAUTHORIZED.getReasonPhrase()));
         if (user.getRole() != Role.CLIENT) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, HttpStatus.FORBIDDEN.getReasonPhrase());
+            throw new AccessDeniedException(FORBIDDEN_MESSAGE);
         }
         if (user instanceof Customer customer) {
             return customer;

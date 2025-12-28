@@ -34,6 +34,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -98,6 +99,37 @@ class TransferServiceTest {
                 () -> transferService.createTransfer(request, authentication));
 
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+        verify(bankAccountRepository, never()).findByRibForUpdate(anyString());
+    }
+
+    @Test
+    void createTransferRejectsOwnershipMismatch() {
+        CreateTransferRequest request = new CreateTransferRequest(
+                1L,
+                new BigDecimal("10.00"),
+                "RIBDEST",
+                null
+        );
+
+        Customer otherCustomer = new Customer();
+        otherCustomer.setId(99L);
+
+        BankAccount source = new BankAccount();
+        source.setId(1L);
+        source.setRib("RIBSOURCE");
+        source.setAmount(new BigDecimal("100.00"));
+        source.setAccountStatus(AccountStatus.OPEN);
+        source.setCustomer(otherCustomer);
+
+        when(bankAccountRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(source));
+
+        AccessDeniedException ex = assertThrows(AccessDeniedException.class,
+                () -> transferService.createTransfer(request, authentication));
+
+        assertEquals(
+                "Vous n\u2019avez pas le droit d\u2019acc\u00e9der \u00e0 cette fonctionnalit\u00e9. Veuillez contacter votre administrateur",
+                ex.getMessage()
+        );
         verify(bankAccountRepository, never()).findByRibForUpdate(anyString());
     }
 

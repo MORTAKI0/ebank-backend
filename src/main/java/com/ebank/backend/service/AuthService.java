@@ -32,11 +32,11 @@ public class AuthService {
     public AuthResponseDto login(LoginRequestDto request) {
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.UNAUTHORIZED, "Login ou mot de passe erronAcs"
+                        HttpStatus.UNAUTHORIZED, "Login ou mot de passe erron\u00e9s"
                 ));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login ou mot de passe erronAcs");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login ou mot de passe erron\u00e9s");
         }
 
         String token = jwtService.generateToken(user);

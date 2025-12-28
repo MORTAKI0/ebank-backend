@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +29,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class DashboardService {
+
+    private static final String FORBIDDEN_MESSAGE =
+            "Vous n\u2019avez pas le droit d\u2019acc\u00e9der \u00e0 cette fonctionnalit\u00e9. Veuillez contacter votre administrateur";
 
     private final BankAccountRepository bankAccountRepository;
     private final BankAccountTransactionRepository transactionRepository;
@@ -109,7 +113,7 @@ public class DashboardService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED, HttpStatus.UNAUTHORIZED.getReasonPhrase()));
         if (user.getRole() != Role.CLIENT) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, HttpStatus.FORBIDDEN.getReasonPhrase());
+            throw new AccessDeniedException(FORBIDDEN_MESSAGE);
         }
         if (user instanceof Customer customer) {
             return customer;
@@ -123,7 +127,7 @@ public class DashboardService {
         BankAccount account = bankAccountRepository.findById(accountId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Compte introuvable"));
         if (!account.getCustomer().getId().equals(customer.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, HttpStatus.FORBIDDEN.getReasonPhrase());
+            throw new AccessDeniedException(FORBIDDEN_MESSAGE);
         }
         return account;
     }

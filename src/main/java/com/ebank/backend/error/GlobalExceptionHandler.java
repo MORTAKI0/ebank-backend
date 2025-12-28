@@ -3,6 +3,7 @@ package com.ebank.backend.error;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,6 +16,11 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final String FORBIDDEN_MESSAGE =
+            "Vous n\u2019avez pas le droit d\u2019acc\u00e9der \u00e0 cette fonctionnalit\u00e9. Veuillez contacter votre administrateur";
+    private static final String INVALID_SESSION_MESSAGE = "Session invalide, veuillez s\u2019authentifier";
+    private static final String INVALID_REQUEST_MESSAGE = "Requete invalide";
 
     // 400 - DTO validation errors (@Valid)
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -29,7 +35,7 @@ public class GlobalExceptionHandler {
     }
 
     // Handles ResponseStatusException you throw in services/controllers
-    // Example: throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login ou mot de passe erronAcs");
+    // Example: throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login ou mot de passe erron\u00e9s");
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ApiError> handleResponseStatus(ResponseStatusException ex,
                                                          HttpServletRequest request) {
@@ -38,12 +44,35 @@ public class GlobalExceptionHandler {
         return build(status, message, request);
     }
 
-    // 401 - Spring Security auth failures (bad credentials etc.)
-    // We map to RG_2 message by default
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiError> handleAccessDenied(AccessDeniedException ex,
+                                                       HttpServletRequest request) {
+        String message = ex.getMessage();
+        if (message == null || message.isBlank()) {
+            message = FORBIDDEN_MESSAGE;
+        }
+        return build(HttpStatus.FORBIDDEN, message, request);
+    }
+
+    // 401 - Spring Security auth failures (bad credentials, invalid token, etc.)
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiError> handleAuthentication(AuthenticationException ex,
                                                          HttpServletRequest request) {
-        return build(HttpStatus.UNAUTHORIZED, "Login ou mot de passe erronAcs", request);
+        String message = ex.getMessage();
+        if (message == null || message.isBlank()) {
+            message = INVALID_SESSION_MESSAGE;
+        }
+        return build(HttpStatus.UNAUTHORIZED, message, request);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiError> handleIllegalArgument(IllegalArgumentException ex,
+                                                          HttpServletRequest request) {
+        String message = ex.getMessage();
+        if (message == null || message.isBlank()) {
+            message = INVALID_REQUEST_MESSAGE;
+        }
+        return build(HttpStatus.BAD_REQUEST, message, request);
     }
 
     // 404 - missing route/static resource
