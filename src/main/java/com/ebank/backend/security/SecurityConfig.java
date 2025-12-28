@@ -42,6 +42,7 @@ SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/health").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/accounts/*/dashboard", "/api/accounts/*/transactions").hasRole("CLIENT")
                         .requestMatchers("/api/customers/**", "/api/accounts/**").hasRole("AGENT_GUICHET")
                         .requestMatchers("/api/me/**", "/api/transfers/**", "/api/dashboard/**").hasRole("CLIENT")
                         .anyRequest().authenticated()
